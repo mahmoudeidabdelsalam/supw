@@ -39,4 +39,4 @@ require_once( plugin_dir_path( __FILE__ ).'inc/include-template.php');
 require_once( RAC_NS_PLUGIN_DIR.'async/apf-save-simple-product.php');
 require_once( RAC_NS_PLUGIN_DIR.'async/apf-product-attributes.php');
 
-add_action( 'plugins_loaded', 'blank_slate_bootstrap' );
+// add_action( 'plugins_loaded', 'blank_slate_bootstrap' );

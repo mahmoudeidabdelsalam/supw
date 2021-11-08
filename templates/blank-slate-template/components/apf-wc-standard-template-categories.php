@@ -3,8 +3,8 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 ?>
 <!-- Product categories -->
 <div class="apf-box-container apf-product-box-container apf-category-container">
-    <div class="apf-header" style="border-bottom: 1px solid #ccd0d4;">
-        <h2> <?php _e( 'Product categories', 'supw_plugin' ); ?></h2>
+    <div class="apf-title">
+        <h4> <?php _e( 'Product categories', 'supw_plugin' ); ?></h4>
     </div>
     <div class="apf-content" style="padding: 12px;">
       <?php

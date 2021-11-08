@@ -123,7 +123,6 @@
 
 .apf-plugin-context .apf-box-container {
     margin-bottom: 20px;
-    box-shadow: 0 1px 1px rgba(0,0,0,.04);
     background: #fff;
 }
 
@@ -293,7 +292,6 @@
 }
 
 .apf-box-container .apf-content {
-    border-top: 1px solid #ccd0d4;
     overflow: hidden;
 }
 
@@ -729,7 +727,6 @@
 }
 
 .apf-plugin-context .apf-box-container {
-  background-color: #efefef;
   overflow: hidden;
   border: none;
   border-radius: 4px !important;
@@ -776,11 +773,8 @@ button#apf-add-tag {
 
 
 select.apf-input.attribute_do {
-  margin: 15px;
   height: 44px;
   font-size: 15px;
-  padding: 0 15px;
-  text-transform: capitalize;
 }
 
 .header-meta-attr {
@@ -788,11 +782,24 @@ select.apf-input.attribute_do {
   display: flex;
 }
 
-.header-meta-attr button.attribute_do_add {
+button.attribute_do_add {
   display: block;
   white-space: nowrap;
-  margin: 10px;
+  margin: 10px 0 10px auto;
   background: #fed503;
+  border-radius: 4px;
+}
+
+.block-variables {
+  padding: 15px;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.block-variables p {
+  margin: 0 10px 10px;
+  white-space: nowrap;
+  font-size: 16px;
 }
 
 .attributes-variable {
@@ -825,4 +832,37 @@ select.apf-input.attribute_do {
   padding: 15px 15px 0 !important;
   background: #ffffff !important;
   margin: 10px;
+}
+
+.apf-upload-image-button {
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin: 10px 0;
+  display: inherit;
+  border-radius: 4px;
+}
+
+.apf-upload-image-button {
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin: 10px 0 0;
+  display: inherit;
+  border-radius: 4px;
+}
+
+label.apf-cat-list {
+  margin: 0;
+}
+
+.apf-category-container .apf-content {
+  margin: 10px 0;
+  border-radius: 4px;
+}
+
+.apf-title h4 {
+  font-size: 15px;
+}
+
+.apf-content.apf-content-image {
+  margin-bottom: 0 !important;
 }

@@ -21,48 +21,20 @@ function save_simple_product() {
         die();
     }
 
-
-
-
-
-
-
     $product->set_props( array (
         'name'               => $values['name'],
+        'manage_stock'       => true, 
+        'stock_quantity'     => $values['quantity'],
         'product_type'       => $values['apf-product-type'],
-        'sku'                => $values['sku'],
         'regular_price'      => $values['regular_price'],
         'sale_price'         => $values['sale_price'],
-        'stock_quantity'     => $values['supw_stock'], // Stock quantity or null
         'upsell_ids'         => $values['upsell_ids'],
         'cross_sell_ids'     => $values['crossell_ids'],
-        'parent_id'          => $values['parent_id'],
         'category_ids'       => $values['category_ids'],
-        'tag_ids'            => $values['tag_ids'],
         'image_id'           => $values['supw_product_image'],
-        'gallery_image_ids'  => $values['supw_product_gallery_ids'],
     ) );
 
-
     $product->set_status( 'pending' );
-
-    // Custom attributes
-    if($_POST['custom_attributes']) {
-      $cus_attributes = array();
-      foreach ($_POST['custom_attributes'] as $key => $value) {
-          if($value) {
-              $cus_attribute = new WC_Product_Attribute();
-              $cus_attribute->set_id(0);
-              $cus_attribute->set_name($key);
-              $cus_attribute->set_options(explode ("|", $value['val']));
-              $cus_attribute->set_position(0);
-              $cus_attribute->set_visible($value['visibility'] == 'on' ? true : false );
-              array_push ($cus_attributes, $cus_attribute);
-          }
-      }
-  
-      $product->set_attributes( $cus_attributes );
-    }
 
 
     // Categories
@@ -76,36 +48,65 @@ function save_simple_product() {
       wp_set_object_terms( $product->get_id(), $values['apf-product-type'], 'product_type' );
     }
     
-    if($_POST['attributes']) {
-    // Attributes
-      foreach ($_POST['attributes'] as $key => $value) {
-        if($value) {
-            wp_set_object_terms( $pid, intval($value['val']), $key, true );
 
-            $att = Array($key => Array(
-                'name'=> $key,
-                'value'=> intval($value['val']),
-                'is_visible' => '1',
-                'is_variation' => '1',
-                'is_taxonomy' => '1'
-              ));
-              $prev = get_post_meta($pid, '_product_attributes', true);
-              if($prev) {
-                update_post_meta( $pid, '_product_attributes',  array_merge($prev,$att));
-              }
-              else {
-                update_post_meta( $pid, '_product_attributes',  $att);
-              }
-            
+    $product_id = $pid;
+
+    $attribute = $_POST['attribute'];
+
+    $attributes = get_terms( array(
+      'taxonomy' => $attribute,
+      'hide_empty' => false,
+    ) );
+
+    $array = [];
+    foreach ($attributes as $item) {
+      $array [] = $item->name;
+    }
+
+    $attributes_data = array(
+        array('name'=> $_POST['attribute_text'],  'options'=>$array, 'visible' => 1, 'variation' => 1 )
+    );
+
+    if( sizeof($attributes_data) > 0 ){
+        $attributes = array(); // Initializing
+
+        // Loop through defined attribute data
+        foreach( $attributes_data as $key => $attribute_array ) {
+            if( isset($attribute_array['name']) && isset($attribute_array['options']) ){
+                // Clean attribute name to get the taxonomy
+                $taxonomy = 'pa_' . wc_sanitize_taxonomy_name( $attribute_array['name'] );
+
+                $option_term_ids = array(); // Initializing
+
+                // Loop through defined attribute data options (terms values)
+                foreach( $attribute_array['options'] as $option ){
+                    if( term_exists( $option, $taxonomy ) ){
+                        // Save the possible option value for the attribute which will be used for variation later
+                        wp_set_object_terms( $product_id, $option, $taxonomy, true );
+                        // Get the term ID
+                        $option_term_ids[] = get_term_by( 'name', $option, $taxonomy )->term_id;
+                    }
+                }
+            }
+            // Loop through defined attribute data
+            $attributes[$taxonomy] = array(
+                'name'          => $taxonomy,
+                'value'         => $option_term_ids, // Need to be term IDs
+                'position'      => $key + 1,
+                'is_visible'    => $attribute_array['visible'],
+                'is_variation'  => $attribute_array['variation'],
+                'is_taxonomy'   => '1'
+            );
         }
-      }
+        // Save the meta entry for product attributes
+        update_post_meta( $product_id, '_product_attributes', $attributes );
     }
 
 
-    // var_dump($_POST['variables']);
     if($_POST['variables']) {
       foreach ($_POST['variables'] as $value) {
-        create_product_variations($pid, $value['slug_one'], $value['slug_two'], $value['attr_one'], $value['attr_two'], $value['variable_price'], $value['number_sku']);
+        // var_dump($pid, $_POST['attribute'], $value['attribute'], $values['regular_price']);
+        create_product_variations($pid, $_POST['attribute'], $value['attribute'], $values['regular_price'], $values['sale_price']);
       }
     }
 
@@ -120,43 +121,16 @@ function save_simple_product() {
     $response_array['prod_name'] = $product->get_title();
     $response_array['prod_id'] = $pid;
     $response_array['permalink'] = get_permalink( $product->get_id() );
+
+
     wp_send_json_success($response_array);
 	die();
 }
 
 
 
-
-
-// Saving variable attr product
-add_action( 'wp_ajax_save_attr_product', 'save_attr_product' );
-add_action( 'wp_ajax_nopriv_save_attr_product', 'save_attr_product' );
-function save_attr_product() {
-  check_ajax_referer( 'ns-apf-special-string', 'security' );
-
-    $value_one = $_POST['value_one'];
-    $value_two = $_POST['value_two'];
-    $slug_attr_one = $_POST['slug_attr_one'];
-    $slug_attr_two = $_POST['slug_attr_two'];
-
-
-    $output .= '<div class="attributes-variable">';
-    $output .= '<input class="custom-input" type="text" readonly name="attribute_one" value="'.$value_one.'">';
-    $output .= '<input class="custom-input" type="text" readonly name="attribute_two" value="'.$value_two.'">';
-    $output .= '<input type="text" name="attribute_slug_one" value="'.$slug_attr_one.'" hidden>';
-    $output .= '<input type="text" name="attribute_slug_two" value="'.$slug_attr_two.'" hidden>';
-    $output .= '<input class="custom-input" type="text" name="variable_regular_price" value="" placeholder="Regular price ($)">';
-    $output .= '<input class="custom-input" type="text" name="variable_sku" value="" placeholder="SKU">';
-    $output .= '</div>';
-
-
-    wp_send_json_success($output);
-  die();
-}
-
-
 // Set variable attr product
-function create_product_variations( $product_id, $slug_one, $slug_two, $attr_one, $attr_two, $variation_price, $variation_sku ){
+function create_product_variations( $product_id, $attribute, $variation_ids, $variation_price, $sale_price ){
     
     $product = wc_get_product($product_id);
     $variation_post = array(
@@ -169,74 +143,60 @@ function create_product_variations( $product_id, $slug_one, $slug_two, $attr_one
     );
     $variation_id = wp_insert_post( $variation_post );
     $variation = new WC_Product_Variation( $variation_id );
-
-
     
     // If taxonomy doesn't exists we create it
-    if( ! taxonomy_exists( $slug_one ) ){
+    if( ! taxonomy_exists( $attribute ) ){
       register_taxonomy(
-        $slug_one,
+        $attribute,
         'product_variation',
         array(
           'hierarchical' => false,
-          'label' => ucfirst( $attr_one ),
+          'label' => ucfirst( $variation_ids ),
           'query_var' => true,
-          'rewrite' => array( 'slug' => sanitize_title($attr_one) ), // The base slug
+          'rewrite' => array( 'slug' => sanitize_title($variation_ids) ), // The base slug
         )
       );
     }
-    if( ! term_exists( $attr_one, $slug_one ) )
-      wp_insert_term( $attr_one, $slug_one );
 
-    $term_slug = get_term_by('name', $attr_one, $slug_one )->slug;
-    $post_term_names =  wp_get_post_terms( $product_id, $slug_one, array('fields' => 'names') );
+    if( ! term_exists( $variation_ids, $attribute ) )
+      wp_insert_term( $variation_ids, $attribute );
 
-    if( ! in_array( $attr_one, $post_term_names ) )
-      wp_set_post_terms( $product_id, $attr_one, $slug_one, true );
+    $term_slug = get_term_by('name', $variation_ids, $attribute )->slug;
+    $post_term_names =  wp_get_post_terms( $product_id, $attribute, array('fields' => 'names') );
 
-    update_post_meta( $variation_id, 'attribute_'.$slug_one, $term_slug );
+    if( ! in_array( $variation_ids, $post_term_names ) )
+      wp_set_post_terms( $product_id, $variation_ids, $attribute, true );
+      update_post_meta( $variation_id, 'attribute_'.$attribute, $term_slug );
 
-
-    // If taxonomy doesn't exists we create it
-    if( ! taxonomy_exists( $slug_two ) ){
-      register_taxonomy(
-        $slug_two,
-        'product_variation',
-        array(
-          'hierarchical' => false,
-          'label' => ucfirst( $attr_two ),
-          'query_var' => true,
-          'rewrite' => array( 'slug' => sanitize_title($attr_two) ), // The base slug
-        )
-      );
-    }
-    if( ! term_exists( $attr_two, $slug_two ) )
-      wp_insert_term( $attr_two, $slug_two );
-
-    $term_slug_two = get_term_by('name', $attr_two, $slug_two )->slug;
-    $post_term_names_two =  wp_get_post_terms( $product_id, $slug_two, array('fields' => 'names') );
-
-    if( ! in_array( $attr_two, $post_term_names_two ) )
-      wp_set_post_terms( $product_id, $attr_two, $slug_two, true );
-
-    update_post_meta( $variation_id, 'attribute_'.$slug_two, $term_slug_two );
-
-        
-
-    ## Set/save all other data
-    // SKU
-    if( ! empty( $variation_sku ) )
-        $variation->set_sku( $variation_data['sku'] );
-    // price
     if( ! empty( $variation_price ) )
       $variation->set_regular_price( $variation_price );
-
-    $variation->save(); // Save the data
+      $variation->set_sale_price( $sale_price );
+      $variation->save(); // Save the data
 }
 
 
 
-?>
+// Saving variable attr product
+add_action( 'wp_ajax_save_attr_product', 'save_attr_product' );
+add_action( 'wp_ajax_nopriv_save_attr_product', 'save_attr_product' );
+function save_attr_product() {
+  check_ajax_referer( 'ns-apf-special-string', 'security' );
 
+    $attribute = $_POST['attribute'];
 
+    $attributes = get_terms( array(
+      'taxonomy' => $attribute,
+      'hide_empty' => false,
+    ) );
 
+    $output .= '<div class="block-variables">';
+    foreach ($attributes as $item) {
+      $output .= '<p><input type="checkbox" id="'.$item->term_id.'" value="'.$item->name.'" name="variables">';
+      $output .= '<label for="'.$item->term_id.'">'.$item->name.' </label></p>';
+    }
+    $output .= '</div>';
+
+    wp_send_json_success($output);
+
+  die();
+}

@@ -1,65 +1,4 @@
 <?php
-
-if ( ! function_exists( 'blank_slate_bootstrap' ) ) {
-
-	/**
-	 * Initialize the plugin.
-	 */
-	function blank_slate_bootstrap() {
-
-		load_plugin_textdomain( 'blank-slate', false, __DIR__ . '/languages' );
-
-		// Register the simple upload products template
-		blank_slate_add_template(
-			'blank-slate-template.php',
-			esc_html__( 'simple upload products', 'blank-slate' )
-		);
-
-		// Add our template(s) to the dropdown in the admin
-		add_filter(
-			'theme_page_templates',
-			function ( array $templates ) {
-				return array_merge( $templates, blank_slate_get_templates() );
-			}
-		);
-
-		// Ensure our template is loaded on the front end
-		add_filter(
-			'template_include',
-			function ( $template ) {
-
-				if ( is_singular() ) {
-
-					$assigned_template = get_post_meta( get_the_ID(), '_wp_page_template', true );
-
-					if ( blank_slate_get_template( $assigned_template ) ) {
-
-						if ( file_exists( $assigned_template ) ) {
-							return $assigned_template;
-						}
-
-						// Allow themes to override plugin templates
-						$file = locate_template( wp_normalize_path( '/blank-slate/' . $assigned_template ) );
-						if ( ! empty( $file ) ) {
-							return $file;
-						}
-
-						// Fetch template from plugin directory
-						$file = wp_normalize_path( plugin_dir_path( __FILE__ ) . '/templates/' . $assigned_template );
-						if ( file_exists( $file ) ) {
-							return $file;
-						}
-					}
-				}
-
-				return $template;
-
-			}
-		);
-
-	}
-}
-
 if ( ! function_exists( 'blank_slate_get_templates' ) ) {
 
 	/**
@@ -188,42 +127,63 @@ if( function_exists('acf_add_local_field_group') ):
         'multiple' => 0,
       ),
       array(
-        'key' => 'field_6181cac328964',
-        'label' => 'slug attr one',
-        'name' => 'slug_attr_one',
-        'type' => 'text',
+        'key' => 'field_61885e707c1d4',
+        'label' => 'attributes',
+        'name' => 'attributes_acf',
+        'type' => 'repeater',
         'instructions' => '',
         'required' => 0,
         'conditional_logic' => 0,
         'wrapper' => array(
-          'width' => '50',
+          'width' => '',
           'class' => '',
           'id' => '',
         ),
-        'default_value' => '',
-        'placeholder' => '',
-        'prepend' => '',
-        'append' => '',
-        'maxlength' => '',
-      ),
-      array(
-        'key' => 'field_6181cec028965',
-        'label' => 'slug attr tow',
-        'name' => 'slug_attr_tow',
-        'type' => 'text',
-        'instructions' => '',
-        'required' => 0,
-        'conditional_logic' => 0,
-        'wrapper' => array(
-          'width' => '50',
-          'class' => '',
-          'id' => '',
+        'collapsed' => '',
+        'min' => 0,
+        'max' => 0,
+        'layout' => 'row',
+        'button_label' => 'add attributes',
+        'sub_fields' => array(
+          array(
+            'key' => 'field_61885fc12312307c1d5',
+            'label' => 'Name attributes',
+            'name' => 'name_attributes',
+            'type' => 'text',
+            'instructions' => '',
+            'required' => 0,
+            'conditional_logic' => 0,
+            'wrapper' => array(
+              'width' => '50',
+              'class' => '',
+              'id' => '',
+            ),
+            'default_value' => '',
+            'placeholder' => '',
+            'prepend' => '',
+            'append' => '',
+            'maxlength' => '',
+          ),
+          array(
+            'key' => 'field_61885fc07c1d5',
+            'label' => 'slug attributes',
+            'name' => 'slug_attributes',
+            'type' => 'text',
+            'instructions' => '',
+            'required' => 0,
+            'conditional_logic' => 0,
+            'wrapper' => array(
+              'width' => '50',
+              'class' => '',
+              'id' => '',
+            ),
+            'default_value' => '',
+            'placeholder' => '',
+            'prepend' => '',
+            'append' => '',
+            'maxlength' => '',
+          ),
         ),
-        'default_value' => '',
-        'placeholder' => '',
-        'prepend' => '',
-        'append' => '',
-        'maxlength' => '',
       ),
     ),
     'location' => array(
@@ -246,3 +206,6 @@ if( function_exists('acf_add_local_field_group') ):
   ));
   
   endif;		
+
+
+

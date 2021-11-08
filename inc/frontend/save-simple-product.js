@@ -15,64 +15,30 @@ jQuery(document).ready( function($){
         return this.value; 
     }).get();
     
-    var attr_values = $('select.attribute_value').serializeArray();
-    
-    // Attribute
-    var attr_name = $('input:text.attr_name').serializeArray();
-
-    // attr_values.serializeArray();
-
-    var attr_is_visible = $('.attribute_visibility').serializeArray();
 
 
-
-    
-    var attr_formatted = {};
-    for (let index = 0; index < attr_name.length; index++) {
-      attr_formatted[attr_name[index].value] = {val: attr_values[index].value, visibility:  attr_is_visible[index] ? attr_is_visible[index].value : 'off'};
-    }
+    var attributes_input = $('input[name="variables"]').serializeArray();
 
 
-    var attributes = $('.attributes-variable');
-
-    var attribute_slug_one = $('input[name="attribute_slug_one"]').serializeArray();
-    var attribute_slug_two = $('input[name="attribute_slug_two"]').serializeArray();
-
-    var attribute_one = $('input[name="attribute_one"]').serializeArray();
-    var attribute_two = $('input[name="attribute_two"]').serializeArray();
-
-
-    var variable_regular_price = $('input[name="variable_regular_price"]').serializeArray();
-    var variable_sku = $('input[name="variable_sku"]').serializeArray();
-
+    // console.log(attributes_input);
 
     var variables = {};
-    for (let index = 0; index < attributes.length; index++) {
-      variables[index] = {slug_one:attribute_slug_one[index].value, slug_two:attribute_slug_two[index].value, attr_one:attribute_one[index].value, attr_two:attribute_two[index].value, variable_price:variable_regular_price[index].value, number_sku:variable_sku[index].value};
+    for (let index = 0; index < attributes_input.length; index++) {
+      variables[index] = {attribute:attributes_input[index].value};
     }
-
-
-
-    // Custom attribute
-    var cus_attr_names = $('input:text.cus_attribute_name').serializeArray();
-    var cus_attr_values = $('textarea.cus_attribute_value').serializeArray();
-    var cus_attr_is_visible = $('.cus_attribute_visibility').serializeArray();
-    var cus_attr_formatted = {};
-    for (let index = 0; index < cus_attr_names.length; index++) {
-      cus_attr_formatted[cus_attr_names[index].value] = {val: cus_attr_values[index].value, visibility:  cus_attr_is_visible[index] ? cus_attr_is_visible[index].value : 'off'};
-    }
-
-
+    
+    var attribute     = $('[name="attribute_value_one"]').find(":selected").val();
+    var attribute_text     = $('[name="attribute_value_one"]').find(":selected").text();
 
     var data
      = {
       action: 'save_simple_product',
       security : savesimpleproduct.security,
       formdata: form_data,
-      attributes: attr_formatted,
-      custom_attributes: cus_attr_formatted,
       categories: categories_formatted,
       variables: variables,
+      attribute: attribute,
+      attribute_text: attribute_text,
     };
 
     $.post(savesimpleproduct.ajax_url, data, function(response) {
@@ -111,22 +77,13 @@ jQuery(document).ready( function($){
   $('.attribute_do_add').on('click', function (e) {
     e.preventDefault();
 
-
-    var value_one     = $('[name="attribute_value_one"]').find(":selected").text();
-    var value_two     = $('[name="attribute_value_two"]').find(":selected").text();
-    var slug_attr_one = $('[name="slug_attr_one"]').val();
-    var slug_attr_two = $('[name="slug_attr_tow"]').val();
-    var counter       = parseInt($('[name="counter"]').val()) + parseInt(1);
+    var attribute     = $('[name="attribute_value_one"]').find(":selected").val();
 
     var data
     = {
      action: 'save_attr_product',
      security : savesimpleproduct.security,
-     value_one: value_one,
-     value_two: value_two,
-     slug_attr_one: slug_attr_one,
-     slug_attr_two: slug_attr_two,
-     counter:   counter
+     attribute: attribute,
    };
 
    $.post(savesimpleproduct.ajax_url, data, function(response) {
@@ -141,5 +98,10 @@ jQuery(document).ready( function($){
 
 
   });
+
+
+
+
+
 
 });

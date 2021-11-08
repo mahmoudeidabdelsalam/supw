@@ -1,31 +1,34 @@
 <?php
 get_header();
-if(is_user_logged_in()) {
-    update_option( 'supw_plugin_template', 'apf-wc-standard-template' );
+
+$user = wp_get_current_user();
+
+// var_dump($user);
+
+if ( in_array( 'seller', (array) $user->roles ) || is_super_admin()) {
+
+    update_option( 'supw_plugin_template', 'blank-slate-template' );
 ?>
 
     <div class="apf-plugin-context">
         <div class="apf-plugin-context-inner">
             <form method="post" id="apf-product-form">
                 <div class="apf-col">
-                  
-                    <?php
-                        require_once( plugin_dir_path( __FILE__ ).'apf-wc-standard-template/components/apf-wc-standard-template-product-image.php'); // Product image
-                        require_once( plugin_dir_path( __FILE__ ).'apf-wc-standard-template/components/apf-wc-standard-template-title.php'); // Title
-                        require_once( plugin_dir_path( __FILE__ ).'apf-wc-standard-template/components/apf-wc-standard-template-categories.php'); // Categories
-                        // require_once( plugin_dir_path( __FILE__ ).'apf-wc-standard-template/components/apf-wc-standard-template-description.php'); // Description
-                        require_once( plugin_dir_path( __FILE__ ).'apf-wc-standard-template/components/apf-wc-standard-template-product-options.php'); // WC Product options
-                        // require_once( plugin_dir_path( __FILE__ ).'apf-wc-standard-template/components/apf-wc-standard-template-excerpt.php'); // Short description / excerpt
-                        require_once( plugin_dir_path( __FILE__ ).'apf-wc-standard-template/components/apf-wc-standard-template-product-gallery.php'); // Product gallery
-                        // require_once( plugin_dir_path( __FILE__ ).'apf-wc-standard-template/components/apf-wc-standard-template-tags.php'); // Tags
-                    ?>
+                  <?php
+                    require_once( plugin_dir_path( __FILE__ ).'blank-slate-template/components/apf-wc-standard-template-product-image.php'); // Product image
+                    require_once( plugin_dir_path( __FILE__ ).'blank-slate-template/components/apf-wc-standard-template-title.php'); // Title
+                    require_once( plugin_dir_path( __FILE__ ).'blank-slate-template/components/apf-wc-standard-template-categories.php'); // Categories
+                    require_once( plugin_dir_path( __FILE__ ).'blank-slate-template/components/apf-wc-standard-template-product-options.php'); // WC Product options
+                  ?>
                 </div>
                 
-                </div>
+
                 <div style="width: 100%;float: left;">
                     <button id="apf-save-product" class="apf-button-default apf-button-primary" type="submit">Save</button>
                 </div>
             </form>
+
+
             <!-- The Modal -->
             <div class="apf-modal">
                 <!-- Modal content -->
@@ -65,11 +68,11 @@ if(is_user_logged_in()) {
 }
 else {
 ?>
-    <div class="apf-plugin-context">
-        <div class="apf-warning-message">
-            <p><?php _e( 'You  must be logged in to view this content!', 'supw_plugin' ); ?></p>
-        </div>
-    </div>
+  <div class="apf-plugin-context">
+      <div class="apf-warning-message">
+          <p><?php _e( 'You are not allowed to upload a product, please create a vendor account!', 'supw_plugin' ); ?></p>
+      </div>
+  </div>
 <?php
    
 }
